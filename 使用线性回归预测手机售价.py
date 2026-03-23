@@ -46,36 +46,29 @@ def dataset(raw):
         newX.append([float(lines[i].split(" ")[0]), float(lines[i].split(" ")[1]), float(lines[i].split(" ")[2])])
     return N, data, labels, newX
 
-#print(data)
-#print(labels)
-#print(newX)
-
 def LR(data, labels, newX):
     model = LinearRegression()
     model.fit(data, labels)
     return model.predict(newX)
 
 def LRraw(data, labels, newX):
-    # Closed-form linear regression (normal equation) with bias term.
-    #
-    # We model: y = Xw + b
-    # Convert to: y = [1, X] * [b, w]^T
-    X = np.asarray(data, dtype=float)  # (N, D)
+    # Closed-form linear regression (normal equation) with bias term. We model: y = Xw + b -> y = [1, X] * [b, w]^T
+    x = np.asarray(data, dtype=float)  # (N, D)
     y = np.asarray(labels, dtype=float)  # (N,)
-    X_new = np.asarray(newX, dtype=float)  # (M, D)
+    x_new = np.asarray(newX, dtype=float)  # (M, D)
+    ones = np.ones((x.shape[0], 1), dtype=float) # (N, 1)
+    X = np.concatenate([ones, x], axis=1)  # (N, D+1) -> augmented X matrix
+    ones_new = np.ones((x_new.shape[0], 1), dtype=float) # (M, 1)
+    X_new = np.concatenate([ones_new, x_new], axis=1)  # (M, D+1) -> augmented X_new matrix
 
-    ones = np.ones((X.shape[0], 1), dtype=float)
-    X_aug = np.concatenate([ones, X], axis=1)  # (N, D+1)
-
-    # Use pseudo-inverse for numerical stability:
-    # theta = (X^T X)^-1 X^T y  ->  theta = pinv(X) y
-    theta = np.linalg.pinv(X_aug) @ y  # (D+1,)
-
-    ones_new = np.ones((X_new.shape[0], 1), dtype=float)
-    X_new_aug = np.concatenate([ones_new, X_new], axis=1)  # (M, D+1)
-    return X_new_aug @ theta  # (M,)
+    theta = np.linalg.inv(X.T @ X) @ X.T @ y
+    return X_new @ theta  # (M,) 
 
 N, data, labels, newX = dataset(input1)
 print(LR(data, labels, newX))
+N, data, labels, newX = dataset(input1)
+print(LRraw(data, labels, newX))
 N, data, labels, newX = dataset(input2)
 print(LR(data, labels, newX))
+N, data, labels, newX = dataset(input2)
+print(LRraw(data, labels, newX))
