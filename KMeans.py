@@ -58,9 +58,6 @@ def kmeans(data, K, D):
     model.fit(data)
     return model
 
-def kmeansraw(data, K, D):
-    pass
-
 model = kmeans(data, K, D)
 print(model.cluster_centers_)
 for i in range(len(data)):

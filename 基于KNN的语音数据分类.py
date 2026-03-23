@@ -36,6 +36,7 @@ Expected Out:
 """
 from collections import defaultdict
 from math import dist
+from re import X
 
 
 input1 = "10 3\n0.5 0.3 0.4 0\n0.6 0.2 0.5 0\n0.4 0.3 0.3 0\n0.7 0.4 0.6 0\n2.1 2.3 2.2 1\n2.3 2.2 2.4 1\n2.2 2.4 2.3 1\n4.5 4.3 4.4 2\n4.4 4.5 4.6 2\n4.6 4.4 4.5 2\n2.2 2.1 2.3"
@@ -46,44 +47,25 @@ def dataset(raw):
     data = []
     first = lines[0].split(" ")
     N = int(first[0])
-    C = int(first[1])
+    K = int(first[1])
     for i in range(1, len(lines) - 1):
-        data.append(lines[i].split(" "))
-    newX = lines[-1].split(" ")
-    return N, C, data, newX
+        data.append([float(x) for x in lines[i].split(" ")])
+    newX = [float(x) for x in lines[-1].split(" ")]
+    return N, K, data, newX
 
+def knn(data, newX, D, K):
+    nearestX = [] # list of tuples, each tuple is a data point and its distance to the new data point
+    for x in data:
+        nearestX.append((x,dist(x[0:D], newX))) # add the data point and its distance to the new data point to the list
+    nearestX.sort(key=lambda x: x[1]) # sort the list by the distance
+    res = [x[0][D] for x in nearestX[0:K]] # get the labels of the nearest K data points
+    return max(set(res), key=res.count) # return the class with the most frequent label
 
-N, C, data, newX = dataset(input1) # N: number of data points, C: number of classes, data: list of data points, newX: new data point
+N, K, data, newX = dataset(input1) # N: number of data points, K: number of classes, data: list of data points, newX: new data point
 D = len(data[0]) - 1  # features; last column is label
 #print(data)
-
-
-def knn(data, newX, D):
-    centroids = defaultdict(list)
-    for i in range(len(data)):
-        x = data[i][0:D]
-        y = int(data[i][D])
-        centroids[y].append(x)
-    centers = []
-    labels = []
-    for label, points in centroids.items():
-        temp = [0.0] * D
-        for j in points:
-            for d in range(D):
-                temp[d] += float(j[d])
-        n = len(points)
-        for d in range(D):
-            temp[d] /= n
-        centers.append(temp)
-        labels.append(label)
-    minDist = float("inf")
-    best = labels[0]
-    newPt = tuple(float(newX[d]) for d in range(D))
-    for i, center in enumerate(centers):
-        dVal = dist(newPt, tuple(center[d] for d in range(D)))
-        if dVal < minDist:
-            minDist = dVal
-            best = labels[i]
-    return best
-
-print(knn(data, newX, D))
+print(knn(data, newX, D, K))
+N, K, data, newX = dataset(input2) # N: number of data points, K: number of classes, data: list of data points, newX: new data point
+D = len(data[0]) - 1  # features; last column is label
+#print(data)
+print(knn(data, newX, D, K))
